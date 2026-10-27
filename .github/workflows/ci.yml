@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m unittest -v
+
+  main-from-develop-only:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: main への PR は develop からだけ受け付ける
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "main への PR は develop から出してください（今: ${{ github.head_ref }}）"
+            exit 1
+          fi
